@@ -27,9 +27,17 @@ import Text.Show.Pretty
 
 tui :: IO ()
 tui = do
-  initialState <- buildInitialState
-  endState <- defaultMain tuiApp initialState
-  print endState
+  arg <- getArgs
+  case arg of
+    [] -> die "No argument to choose file to edit"
+    (fp : _) -> do
+      path <- resolveFile' fp
+      maybeContents <- forgivingAbsence $ T.readFile (fromAbsFile path)
+      let contents = fromMaybe "" maybeContents
+      initialState <- buildInitialState contents
+      endState <- defaultMain tuiApp initialState
+      let contents' = rebuildTextFieldCursor (stateCursor endState)
+      unless (contents == contents') $ T.writeFile (fromAbsFile path) contents'
 
 data TuiState = TuiState
   { stateCursor :: TextFieldCursor
@@ -48,11 +56,8 @@ tuiApp =
       appAttrMap = const $ attrMap mempty [("text", fg red), ("bg", fg blue)]
     }
 
-buildInitialState :: IO TuiState
-buildInitialState = do
-  path <- resolveFile' "src/example.txt"
-  maybeContents <- forgivingAbsence $ T.readFile (fromAbsFile path)
-  let contents = fromMaybe "" maybeContents
+buildInitialState :: Text -> IO TuiState
+buildInitialState contents = do
   let tfc = makeTextFieldCursor contents
   pure TuiState {stateCursor = tfc}
 

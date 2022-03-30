@@ -71,8 +71,13 @@ handleTuiEvent s e =
             continue s'
        in case vtye of
             EvKey (KChar c) [] -> mDo $ textFieldCursorInsertChar c . Just
-            EvKey KRight [] -> mDo textFieldCursorSelectNextChar
+            EvKey KUp [] -> mDo textFieldCursorSelectPrevLine
+            EvKey KDown [] -> mDo textFieldCursorSelectNextLine
             EvKey KLeft [] -> mDo textFieldCursorSelectPrevChar
+            EvKey KRight [] -> mDo textFieldCursorSelectNextChar
+            EvKey KBS [] -> mDo $ dullMDelete . textFieldCursorRemove
+            EvKey KDel [] -> mDo $ dullMDelete . textFieldCursorDelete
+            EvKey KEnter [] -> mDo $ Just . textFieldCursorInsertNewline . Just
             EvKey KEsc [] -> halt s
             _ -> continue s
     _ -> continue s

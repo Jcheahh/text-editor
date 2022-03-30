@@ -45,7 +45,7 @@ tuiApp =
       appChooseCursor = showFirstCursor,
       appHandleEvent = handleTuiEvent,
       appStartEvent = pure,
-      appAttrMap = const $ attrMap mempty []
+      appAttrMap = const $ attrMap mempty [("text", fg red), ("bg", fg blue)]
     }
 
 buildInitialState :: IO TuiState
@@ -57,7 +57,14 @@ buildInitialState = do
   pure TuiState {stateCursor = tfc}
 
 drawTui :: TuiState -> [Widget ResourceName]
-drawTui ts = [selectedTextFieldCursorWidget ResourceName (stateCursor ts)]
+drawTui ts =
+  [ forceAttr "text" $
+      centerLayer $
+        border $
+          padLeftRight 1 $
+            selectedTextFieldCursorWidget ResourceName (stateCursor ts),
+    forceAttr "bg" $ fill '@'
+  ]
 
 handleTuiEvent :: TuiState -> BrickEvent n e -> EventM n (Next TuiState)
 handleTuiEvent s e =

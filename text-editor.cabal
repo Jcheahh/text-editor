@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      LearnCursor
       Lib
       Tui
   other-modules:
@@ -37,10 +38,12 @@ library
     , cursor
     , cursor-brick
     , directory
+    , microlens
     , path
     , path-io
     , pretty-show
     , text
+    , validity
     , vty
   default-language: Haskell2010
 

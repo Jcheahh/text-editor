@@ -34,8 +34,14 @@ library:
     - pretty-show
     - text
     - vty
+    - lens
+    - containers
     - microlens
+    - microlens-platform
     - validity
+    - hspec
+    - bytestring
+    - yaml
 
 executables:
   text-editor-exe:

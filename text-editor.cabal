@@ -29,6 +29,7 @@ library
       LearnLens
       Lib
       MicroSmos
+      MilliSmos
       Tui
   other-modules:
       Paths_text_editor

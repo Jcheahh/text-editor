@@ -1,5 +1,9 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module LearnCursor where
 
@@ -10,29 +14,33 @@ import Brick.Util
 import Brick.Widgets.Border
 import Brick.Widgets.Center
 import Brick.Widgets.Core
+import Brick.Widgets.List (listSelectedAttr)
 import Control.Monad
 import Cursor.Brick.TextField
+import Cursor.Forest (CForest, CTree)
+import Cursor.Simple.Tree (TreeAbove (TreeAbove))
+import qualified Cursor.Simple.Tree as CST
 import Cursor.Text
 import Cursor.TextField
+import qualified Cursor.Tree as CT
 import Cursor.Types
 import Data.Maybe
-import Data.Text (Text)
+import Data.Monoid (Endo)
+import qualified Data.Text as Text
 import qualified Data.Text.IO as T
+import Data.Tree
 import qualified Data.Validity as Valid
 import GHC.Generics (Generic)
 import qualified Graphics.Vty as Vty
 import Graphics.Vty.Attributes
 import Graphics.Vty.Input.Events
-import Lens.Micro
 import Path
 import Path.IO
 import System.Directory
 import System.Environment
 import System.Exit
+import Test.Hspec
 import Text.Show.Pretty
-
--- import Test.Hspec
--- import Test.Validity
 
 data ListCursor' a = ListCursor' {list :: [a], index :: Int}
 
@@ -86,7 +94,7 @@ listCursorNext lc = case next lc of
 
 -- instance GenValid TextCursor
 
--- makeTextCursor :: T.Text -> Maybe TextCursor
+-- makeTextCursor :: T.Text.Text -> Maybe TextCursor
 -- makeTextCursor = constructValid . makeListCursor . T.unpack
 
 -- describe :: Spec
@@ -99,7 +107,7 @@ listCursorNext lc = case next lc of
 -- textCursorInsert '\n' _ = Nothing
 -- textCursorInsert c tc = Just (tc & textCursorListCursorL %~ listCursorInsert c)
 
-nanoSmosApp :: App TextFieldCursor e Text
+nanoSmosApp :: App TextFieldCursor e Text.Text
 nanoSmosApp =
   App
     { appDraw = draw,
@@ -109,7 +117,7 @@ nanoSmosApp =
       appAttrMap = const $ attrMap Vty.defAttr []
     }
 
-draw :: TextFieldCursor -> [Widget Text]
+draw :: TextFieldCursor -> [Widget Text.Text]
 draw tc =
   [ centerLayer $
       border $
@@ -119,7 +127,7 @@ draw tc =
                 txtWrap (rebuildTextFieldCursor tc)
   ]
 
-handleEvent :: TextFieldCursor -> BrickEvent Text e -> EventM Text (Next TextFieldCursor)
+handleEvent :: TextFieldCursor -> BrickEvent Text.Text e -> EventM Text.Text (Next TextFieldCursor)
 handleEvent tc e = case e of
   VtyEvent ve -> case ve of
     EvKey key mods ->
@@ -153,3 +161,23 @@ buildInitialState = do
   let contents = fromMaybe "" maybeContents
   let tfc = makeTextFieldCursor contents
   pure tfc
+
+-- treeCursorSelectNextOnSameLevel :: TreeCursor a -> Maybe (TreeCursor a)
+-- treeCursorSelectNextOnSameLevel tc@TreeCursor {..} = do
+--   ta <- treeAbove
+--   case treeAboveRights ta of
+--     [] -> Nothing
+--     Node c f : xs ->
+--       Just $
+--         TreeCursor
+--           { treeAbove =
+--               Just $
+--                 ta
+--                   { treeAboveLefts =
+--                       Node (treeCurrent tc) (treeBelow tc) :
+--                       treeAboveLefts ta,
+--                     treeAboveRights = xs
+--                   },
+--             treeCurrent = n,
+--             treeBelow = f
+--           }

@@ -30,6 +30,7 @@ library
       Lib
       MicroSmos
       MilliSmos
+      PicoSmos
       Tui
   other-modules:
       Paths_text_editor
